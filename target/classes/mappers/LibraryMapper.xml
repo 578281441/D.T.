@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="dt.library.mapper.LibraryMapper">
+	<select id="find" resultType="dt.library.entity.Library">
+		SELECT
+			name,curator,
+			tel,address,
+			email,website,
+			created_date AS createdDate,
+			profile,card_fee AS cardFee,
+			card_valid_date AS cardValidDate
+		FROM
+			tb_library
+	</select>
+</mapper>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" 
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"  
+	xmlns:jee="http://www.springframework.org/schema/jee" 
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop" 
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.2.xsd
+		http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.2.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+		http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa-1.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.2.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.2.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd">
+		
+	<!-- 组件扫描 -->
+	<context:component-scan base-package="dt.library"/>
+	
+	<!-- 配置视图解析器 -->
+<!-- 	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver"/> -->
+	
+	<!-- 读取db.properties中的配置 -->
+	<util:properties id="dbConfig" location="classpath:db.properties" />
+	
+	<!-- 配置数据源 -->
+	<bean id="dataSource" 
+		class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="url" value="#{dbConfig.url}"/>
+		<property name="driverClassName" value="#{dbConfig.driver}"/>
+		<property name="username" value="#{dbConfig.username}"/>
+		<property name="password" value="#{dbConfig.password}"/>
+		<property name="initialSize" value="#{dbConfig.initialSize}"/>
+		<property name="maxActive" value="#{dbConfig.maxActive}"/>
+	</bean>
+	
+	<!-- MapperScannerConfigurer -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!-- 持久层接口在哪个包中 -->
+		<property name="basePackage" value="dt.library.mapper" />
+	</bean>
+	
+	<!-- SqlSessionFactoryBean -->
+	<bean class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!-- 如何连接数据库 -->
+		<property name="dataSource" ref="dataSource" />
+		<!-- 配置的XML文件在哪里 -->
+		<property name="mapperLocations" 
+			value="classpath:mappers/*.xml" />			
+	</bean>
+	
+	<!-- 注解驱动 -->
+	<mvc:annotation-driven>  
+    <!-- 处理responseBody 里面日期类型 -->  
+        <mvc:message-converters>  
+            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">  
+                <property name="objectMapper">  
+                    <bean class="com.fasterxml.jackson.databind.ObjectMapper">  
+                        <property name="dateFormat">  
+                            <bean class="java.text.SimpleDateFormat">  
+                                <constructor-arg type="java.lang.String" value="yyyy-MM-dd" />  
+                            </bean>  
+                        </property>  
+                    </bean>  
+                </property>  
+            </bean>  
+        </mvc:message-converters>  
+    </mvc:annotation-driven>
+	
+	<!-- 配置拦截器链 -->
+	<mvc:interceptors>
+		<!-- 配置第1个执行的拦截器 -->
+		<mvc:interceptor>
+			<!-- 1.配置拦截路径,即黑名单 "/*"不能多层拦截/user/info/1 多层拦截:/user/** -->
+			<mvc:mapping path="/**"/>
+			<!-- 2.配置白名单 -->
+			<mvc:exclude-mapping path="/user/reg.do"/>
+			<mvc:exclude-mapping path="/user/handle_reg.do"/>
+			<mvc:exclude-mapping path="/user/login.do"/>
+			<mvc:exclude-mapping path="/user/handle_login.do"/>
+			<!-- 配置拦截器类 -->
+			<bean class="dt.library.interceptor.LoginInterceptor"/>
+		</mvc:interceptor>
+	</mvc:interceptors>
+</beans>

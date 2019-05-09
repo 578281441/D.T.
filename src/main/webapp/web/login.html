@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>图书馆管理系统</title>
+<link href="../css/login.css" rel="stylesheet">
+<script src="../js/util.js" ></script>
+<script src="../js/jquery-3.3.1.js" ></script>
+<script src="../js/jquery.cookie.js" ></script>
+</head>
+<body>
+	<table width="778" border="0" align="center" cellpadding="0"
+		cellspacing="0" bgcolor="#F9D16B" class="tableBorder">
+		<tr>
+			<td>
+				<table width="760" border="0" align="center" cellpadding="0"
+					cellspacing="0">
+					<tr>
+						<td height="142" valign="top">&nbsp;</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+		<td>
+			<table width="100%" border="0" cellspacing="0" cellpadding="0">
+				<tr>
+					<td valign="top"><table width="100%" height="525" border="0"
+							align="center" cellpadding="0" cellspacing="0">
+							<tr>
+								<td height="523" align="center" valign="top"><table
+										width="100%" height="271" border="0" cellpadding="0"
+										cellspacing="0">
+										<tr>
+											<td height="271" align="right" valign="top"
+												class="word_orange"><table width="100%" height="255"
+													border="0" cellpadding="0" cellspacing="0"
+													background="../images/login.jpg">
+													<tr>
+														<td height="57">&nbsp;</td>
+													</tr>
+													<tr>
+														<td height="179" valign="top"><table width="100%"
+																height="63" border="0" cellpadding="0" cellspacing="0">
+																<tr>
+																	<td width="2%">&nbsp;</td>
+																	<td width="97%" align="center" valign="top">
+																		<form id="form-login" name="form1" method="post">
+																			<table width="100%" border="0" cellpadding="0"
+																				cellspacing="0" bordercolorlight="#FFFFFF"
+																				bordercolordark="#D2E3E6">
+																				<tr>
+																					<td height="57">&nbsp;</td>
+																					<td height="57" colspan="2" align="center">&nbsp;</td>
+																					<td>&nbsp;</td>
+																				</tr>
+																				<tr>
+																					<td width="50%" height="37">&nbsp;</td>
+																					<td width="10%">用户名称</td>
+																					<td width="31%"><input name="username"
+																						type="text" class="logininput" id="username"
+																						size="27" value="" ></td>
+																					<td width="9%">&nbsp;</td>
+																				</tr>
+																				<tr>
+																					<td height="25">&nbsp;</td>
+																					<td>用户密码</td>
+																					<td><input name="password" type="password"
+																						class="logininput" id="password" size="27"></td>
+																					<td>&nbsp;</td>
+																				</tr>
+																				<tr>
+																					<td></td>
+																					<td></td>
+																					<td id="msg" height="25" style="color: red"
+																						height="30"></td>
+																				</tr>
+																				<tr>
+																					<td height="25"></td>
+																					<td></td>
+																					<td><input type="checkbox" id="remname_checkbox" 
+																						value="1"><label for="remname">记住用户名</label>
+																						<input style="padding: 0"
+																						id="btn-login" name="Submit" type="button"
+																						class="btn_grey" value="登录"> &nbsp;</td>
+																					<td>&nbsp;</td>
+																				</tr>
+																			</table>
+																		</form>
+																	</td>
+																	<td width="1%">&nbsp;</td>
+																</tr>
+															</table></td>
+													</tr>
+													<tr>
+														<td height="19">&nbsp;</td>
+													</tr>
+												</table></td>
+										</tr>
+
+									</table>
+									<table width="100%" height="27" border="0" cellpadding="0"
+										cellspacing="0">
+										<tr>
+											<td align="center" class="word_login">CopyRight &copy;
+												2019 D.T.有限公司<br> 本站请使用IE6.0或以上版本 1024*768为最佳显示效果
+											</td>
+										</tr>
+									</table></td>
+							</tr>
+						</table></td>
+				</tr>
+			</table>
+		</td>
+		</tr>
+	</table>
+	<script type="text/javascript">
+		$(function() {
+			getRemname();
+			$("#btn-login").click(function() {
+				login();
+			});
+		});
+		function getRemname(){
+			if($.cookie("remname")!=null){
+				$("#username").val($.cookie("remname"));
+				$("#remname_checkbox").attr("checked","checked");
+			}
+		}
+		function login(){
+			//非空验证
+			var b = true;
+			var msg = "登录失败：";
+			var username = $("#username").val();
+			var password = $("#password").val();
+			if (username == "" && password == "") {
+				msg += "用户名或密码不能为空";
+				$("#username").focus();
+				b = false;
+			} else if (username == "") {
+				msg += "用户名不能为空";
+				$("#username").focus();
+				b = false;
+			} else if (password == "") {
+				msg += "密码不能为空";
+				$("#password").focus();
+				b = false;
+			}
+			if (!b) {
+				$("#msg").html(msg);
+				return;
+			}
+			//提交登录数据
+			$.ajax({
+				"url" : projectName + "/users/login.do",
+				"data" : $("#form-login").serialize(),
+				"type" : "post",
+				"dataType" : "json",
+				"success" : function(json) {
+					if (json.state == 200) {
+						var username=$("#username").val();
+						if(!$("#remname_checkbox").is(':checked')){
+							username=null;
+						}
+						alert("remname="+username);
+						$.cookie("remname",username,{"expires":7});
+						$(location).prop("href", "getLibrary.html");
+					} else {
+						$("#msg").html(json.message);
+					}
+				}
+			});
+		}
+	</script>
+</body>
+</html>

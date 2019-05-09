@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="dt.library.mapper.BookVOMapper">
+	<select id="findAll" resultType="dt.library.vo.BookVO">
+		SELECT 
+			barcode,bookname AS bookName,
+			typename AS typeName,bookcase_name AS bookcaseName,
+			name AS publisher,author,
+			borr.degree AS borrowCount
+		FROM (
+			SELECT bookid,count(bookid) AS degree 
+				FROM
+					tb_borrow
+				GROUP BY
+					bookid
+			) AS borr 
+		JOIN (
+			SELECT
+				b.*,c.name AS bookcase_name,p.name,t.typename 
+			FROM
+				tb_book AS b
+			LEFT JOIN
+				tb_bookcase AS c
+			ON
+				b.bookcase_id=c.id
+			JOIN
+				tb_publisher AS p
+			ON
+				b.publisher_id=p.id
+			JOIN
+				tb_booktype AS t 
+			ON
+				b.type_id=t.id 
+			WHERE
+				b.is_delete=0
+			) AS book 
+		ON 
+			borr.bookid=book.id 
+		ORDER BY
+			borr.degree DESC 
+		LIMIT 5
+	</select>
+</mapper>
